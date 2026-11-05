@@ -1,5 +1,6 @@
 """AI client abstraction supporting multiple providers."""
 
+import json
 import os
 import re
 from abc import ABC, abstractmethod
@@ -259,6 +260,11 @@ class OpenAIClient(AIClient):
         base_url = self._resolve_base_url(config)
         if base_url:
             kwargs["base_url"] = base_url
+
+        # Proxies such as OpenCode Go require extra routing headers.
+        extra_headers = os.getenv("HORIZON_AI_HEADERS", "").strip()
+        if extra_headers:
+            kwargs["default_headers"] = json.loads(extra_headers)
 
         self.client = AsyncOpenAI(**kwargs)
         self.model = config.model
